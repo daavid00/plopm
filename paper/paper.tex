@@ -1,0 +1,89 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{authblk}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{natbib}
+\bibliographystyle{unsrtnat}
+\usepackage[hidelinks,colorlinks=true,linkcolor=blue]{hyperref}
+\hypersetup{citecolor=blue, urlcolor=blue}
+
+\title{plopm: A lightweight and flexible tool for visualization and postprocessing of OPM Flow geological models}
+
+\author[1]{David Landa-Marb\'an\thanks{Corresponding author. ORCID: \href{https://orcid.org/0000-0002-3343-1005}{0000-0002-3343-1005}}}
+\affil[1]{NORCE Research AS, Bergen, Norway}
+
+\date{16 February 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent Reservoir simulations help the energy industry understand how underground pressure affects the movement of fluids such as water, oil, or gas and how it influences the stability of the surrounding rocks. These insights support better decisions in areas like energy production, carbon storage, and geothermal development. An important step in working with simulation results is postprocessing, which involves visualizing and analyzing the data. \texttt{plopm} is a tool designed to make this step faster, easier, and more consistent. \texttt{plopm} is operated through the command line, where users specify their postprocessing tasks using simple flags. This approach supports reproducibility and encourages efficient workflows. \texttt{plopm} is highly efficient, able to postprocess models containing hundreds of millions of cells in only a few tens of seconds. The tool offers several ways to visualize geological models. For example, users can generate 2D maps and choose how values are projected along a particular dimension, such as taking the maximum, minimum, or a pore‑volume‑weighted average. These options make it easier to compare scenarios and understand key patterns in the subsurface. Although \texttt{plopm} was originally intended to produce PNGs, GIFs, and VTK files from OPM Flow simulations, it has since grown more flexible. It can now also process results stored in CSV files, broadening its usefulness beyond the standard OPM Flow output format. The graphical abstract is shown in Fig. \ref{fig:graphical}.
+\end{abstract}
+
+\begin{figure}[!h]
+  \centering
+  \includegraphics[width=0.7\linewidth]{paper.png}
+  \caption{Graphical representation of \texttt{plopm}'s functionality. See the \href{https://cssr-tools.github.io/plopm/examples.html\#graphical-abstract}{online documentation} for reproduction details.}
+  \label{fig:graphical}
+\end{figure}
+
+\section{Statement of need}
+OPM Flow is an open-source simulator for subsurface applications such as CO$_2$ storage, hydrogen storage, and hydrocarbon production~\citep{Rassmussen:2021}. There is growing demand for tools that make it easier to visualize and analyze simulation results, particularly for large‑scale models. \texttt{plopm} is a user‑friendly Python tool designed to support this need by providing efficient visualization and postprocessing of OPM Flow outputs. It is intended for researchers, engineers, and students who need to quickly interpret simulation results and compare scenarios. \texttt{plopm} offers flexible 2D visualization options, allowing users to choose among several projection methods depending on their analysis goals. This flexibility is especially relevant in current studies where rapid exploration of model behavior is essential. A key motivation behind \texttt{plopm} is to improve reproducibility, an increasingly important requirement in scientific research and technical reporting. Each generated figure can be reproduced by using a clear set of command‑line flags, ensuring that results can be regenerated, shared, and further processed in a consistent and transparent manner.
+
+\section{State of the field}
+\href{https://www.paraview.org}{ParaView} is a widely used open‑source post‑processing and visualization tool written in C++. It offers a comprehensive graphical user interface and excels at interactive 3D rendering, slicing, contouring, and animating simulation results. However, ParaView can have a steep learning curve, may experience performance and stability limitations, and is demanding in terms of memory and setup.
+
+\href{https://resinsight.org}{ResInsight} is an open‑source C++ tool designed specifically for postprocessing reservoir simulations, including Eclipse and OPM Flow models. It performs well when analyzing large datasets and visualizing grids, wells, and dynamic properties. Nevertheless, ResInsight can face performance issues with very large models, and importing models with extensive fault information may be time‑consuming. Users on macOS may also encounter installation challenges. In addition, the software struggles with models that have extremely small cell dimensions (below 1 mm) or very large cell counts (greater than 100 million).
+
+While both ResInsight and ParaView are excellent tools for 3D visualization, lower‑dimensional tasks (2D and 1D) often carry unnecessary overhead when performed through full-featured visualization environments. In such cases, Python scripts can significantly streamline the postprocessing workflow. To the author’s knowledge, prior to the development of \texttt{plopm} there was no integrated, well‑documented Python‑based tool capable of generating PNGs, GIFs, and VTKs from OPM Flow output files using command‑line flags. Python provides a more accessible and flexible environment than C++, lowering the entry barrier for researchers, engineers, and students who require lightweight and customizable tools for model analysis.
+
+The VTK functionality in \texttt{plopm} was originally implemented to enable 3D visualization of a SPE11C benchmark model, which contained more than 100 million cells. This capability made it possible to generate visualizations such as this \href{https://github.com/OPM/pyopmspe11/blob/main/docs/text/figs/pyopmspe11c100Mcells.gif}{GIF}. The motivation for developing this feature was the limited VTK support available in OPM Flow. In particular, several useful quantities are not exported (e.g., FIPNUM, FLORES), and the simulator writes the entire grid at every report step, leading to extremely large output files. In contrast, the VTK functionality in \texttt{plopm} allows users to efficiently extract selected data directly from OPM Flow output files (e.g., UNRST, INIT, EGRID) and convert them into lightweight VTK structures suitable for 3D visualization.
+
+\texttt{plopm} offers a variety of options for visualizing simulation results, allowing users to compare methods and select the one that best fits their needs. For additional details about the capabilities included in plopm, see the \href{https://cssr-tools.github.io/plopm/examples.html}{examples} in the project documentation.
+
+\section{Software design}
+\texttt{plopm} leverages well‑established and widely used Python libraries. The Matplotlib package~\citep{Hunter_Matplotlib_A_2D_2007} forms the core of the plotting routines. NumPy~\citep{2020NumPy-Array} provides the foundational array operations used throughout the tool, and SciPy~\citep{Virtanen:2020} supports interpolation tasks as well as the computation of normal and lognormal distributions used in ensemble visualizations. To display progress and estimate remaining runtime during postprocessing, the alive‑progress package~\citep{aliveprogress} is employed. Parsing of OPM Flow binary output files is handled through the \href{https://pypi.org/project/opm/}{opm} library.
+
+The primary methods implemented in \texttt{plopm} include handling of corner‑point grids, parsing input decks (for example, to visualize wells and faults), enforcing homogenized colorbar limits to compare multiple models within a single figure, mapping OPM Flow output to VTK format, and stacking filter and cell‑value operations.
+
+Interaction with the tool is performed via the terminal through an executable named \texttt{plopm}, which exposes a collection of command‑line flags (70 at the time of writing; see the online documentation for the current list at \href{https://cssr-tools.github.io/plopm/introduction.html#overview}{current list}). These flags control key functionality such as specifying input models, defining the desired postprocessing operations, and selecting output file names. This design enables users to apply consistent postprocessing settings across different simulations. Advanced users familiar with Python can also access the underlying modules directly, allowing integration into more complex workflows and customization of model transformations to meet specific research or engineering needs.
+
+\section{Research impact statement}
+\texttt{plopm} is already being adopted across several projects at NORCE Research AS. GitHub traffic insights also show a steady increase in repository clones, indicating broader interest and growing usage within the community.
+
+The software has supported several research publications, including:
+\begin{itemize}
+  \item \cite{10.2118/218477-MS}, where it was used to generate 2D maps of static properties and dynamic quantities such as pressure, salinity, and CO$_2$ saturation in synthetic 2D radial geometries.
+  \item \cite{10.1007/s11242-025-02275-0}, for producing 2D maps of static properties and CO$_2$ mass for the FluidFlower/SPE11A models.
+  \item \cite{10.2118/231853-PA}, for comparing 2D maps across different grid resolutions of the SPE11B benchmark model.
+  \item \cite{landamarban2025}, for generating 2D maps of static properties and pore‑volume‑weighted average pressure for the Troll aquifer model.
+\end{itemize}
+
+The software also supports the online documentation of several open‑source tools, including:
+\begin{itemize}
+\item \href{https://github.com/cssr-tools/expreccs}{expreccs}: A Python framework using OPM Flow to simulate regional and site reservoirs for CO$_2$ storage. 
+\item \href{https://github.com/cssr-tools/pofff}{pofff}: An image-based history-matching framework for the FluidFlower Benchmark using OPM Flow.
+\item \href{https://github.com/cssr-tools/pycopm}{pycopm}: An open-source tool to tailor OPM Flow geological models.
+\item \href{https://github.com/cssr-tools/pyopmnearwell}{pyopmnearwell}: A Python framework to simulate near well dynamics using OPM Flow.
+\item \href{https://github.com/OPM/pyopmspe11}{pyopmspe11}: A Python framework using OPM Flow for the CSP SPE11 benchmark project.
+\end{itemize}
+
+\noindent Significant effort has been dedicated to developing comprehensive online documentation that enables users to reproduce figures, tables, and computational workflows from recent publications. This work is motivated by the FAIR principles (Findable, Accessible, Interoperable, Reusable)~\citep{Wilkinson2016}, which have not been consistently implemented in subsurface research in recent years~\citep{liu2025}. For example, the \href{https://cssr-tools.github.io/pofff/publication.html}{Publication}, \href{https://cssr-tools.github.io/expreccs/tccs-13.html#}{TCCS-13}, and \href{https://opm.github.io/pyopmspe11/convergence.html}{Convergence} documentation includes step‑by‑step terminal commands (such as \texttt{plopm}) required to generate the results published in \cite{10.1007/s11242-025-02275-0}, \cite{landamarban2025}, and \cite{10.2118/231853-PA}, respectively. These pages include the exact terminal commands (such as those invoking \texttt{plopm}) needed to regenerate the published outputs. This ensures that the scientific results are not only transparent but also directly reusable by other researchers, thereby enhancing methodological rigor and accelerating future developments.
+
+\section{AI usage disclosure}
+No generative AI tools were used in the development of this software. Microsoft M365 Copilot (powered by a GPT-5–class large language model developed by Microsoft) was used to check and improve the writing of this manuscript.
+
+\section*{Acknowledgements}
+The author acknowledges funding from the \href{https://cssr.no}{Center for Sustainable Subsurface Resources (CSSR)}, grant nr. 331841, supported by the Research Council of Norway, research partners NORCE Norwegian Research Centre and the University of Bergen, and user partners Equinor ASA, Harbour Energy, Sumitomo Corporation, Earth Science Analytics, GCE Ocean Technology, and SLB Scandinavia. The author also acknowledges funding from the \href{https://www.norceresearch.no/en/projects/expansion-of-resources-for-co2-storage-on-the-horda-platform-expreccs}{Expansion of Resources for CO$_2$ Storage on the Horda Platform (ExpReCCS) project}, grant nr. 336294, supported by the Research Council of Norway, Equinor ASA, A/S Norske Shell, and Harbour Energy Norge AS.
+
+\bibliography{paper}
+
+\end{document}
