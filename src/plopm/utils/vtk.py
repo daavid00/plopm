@@ -28,9 +28,8 @@ def make_vtks(dic):
     """
     for k, case in enumerate(dic["names"][0]):
         dic["deck"] = case
-        if len(dic["deck"].split("/")) > 1:
-            dic["deck"] = dic["deck"].split("/")[-1]
-        if not os.path.isfile(f"{dic['output']}/{dic['deck']}-GRID.vtu"):
+        dic["dname"] = case.split("/")[-1]
+        if not os.path.isfile(f"{dic['output']}/{dic['dname']}-GRID.vtu"):
             cwd = os.getcwd()
             if len(case.split("/")) > 1:
                 os.chdir("/".join(case.split("/")[:-1]))
@@ -39,21 +38,19 @@ def make_vtks(dic):
                 args=f"{dic['flow']} --version", stdout=PIPE, shell=True
             ) as process:
                 dic["flow_version"] = str(process.communicate()[0])[7:-3]
-            # if dic["flow_version"] == "2025.04": OPM Flow dryrun+vtk is broken again ...
-            make_dry_deck(dic)
-            # else:
-            #    os.system(f"cp {dic['deck']}.DATA {dic['deck']}_DRYRUN.DATA")
-            #    flags += " --enable-dry-run=1"
+            # make_dry_deck(dic) Keep just in case dryrun+vtk breaks again
+            os.system(f"cp {dic['dname']}.DATA {dic['dname']}_DRYRUN.DATA")
+            flags += " --enable-dry-run=1"
             os.system("mkdir plopm_vtks_temporal")
-            deck = f" ../{dic['deck']}_DRYRUN.DATA"
+            deck = f" ../{dic['dname']}_DRYRUN.DATA"
             os.chdir("plopm_vtks_temporal")
-            if "SPE11B" in dic["deck"] or "SPE11C" in dic["deck"]:
+            if "SPE11B" in dic["dname"] or "SPE11C" in dic["dname"]:
                 os.system(dic["flow"] + deck + flags + thermal)
             else:
                 os.system(dic["flow"] + deck + flags)
             os.system(
-                f"mv {dic['deck']}_DRYRUN-00000.vtu "
-                + f"{dic['output']}/{dic['deck']}-GRID.vtu"
+                f"mv {dic['dname']}_DRYRUN-00000.vtu "
+                + f"{dic['output']}/{dic['dname']}-GRID.vtu"
             )
             os.system(f"cd .. && rm -rf plopm_vtks_temporal {deck[4:]}")
             os.chdir(cwd)
@@ -74,7 +71,7 @@ def writepvd(dic, k):
         None
 
     """
-    where = dic["save"][k] if dic["save"][k] else dic["deck"]
+    where = dic["save"][k] if dic["save"][k] else dic["dname"]
     base_pvd = []
     base_pvd.append(
         "<?xml version='1.0'?>\n"
@@ -112,7 +109,7 @@ def opmtovtk(dic, k):
     """
     base_vtk = []
     skip = False
-    with open(f"{dic['output']}/{dic['deck']}-GRID.vtu", encoding="utf8") as file:
+    with open(f"{dic['output']}/{dic['dname']}-GRID.vtu", encoding="utf8") as file:
         for line in file:
             if skip and "CellData" in line:
                 skip = False
@@ -126,11 +123,11 @@ def opmtovtk(dic, k):
         "\t\t\t\t<CellData Scalars='File created by https://github.com/cssr-tools/plopm'>",
     )
     with alive_bar(len(dic["restart"]) * len(dic["vrs"])) as bar_animation:
-        for i in dic["restart"]:
+        for l, i in enumerate(dic["restart"]):
             for n, var in enumerate(dic["vrs"]):
                 bar_animation()
                 unit, quan = get_quantity(dic, var.upper(), n, i, 0)
-                if i == 0:
+                if l == 0:
                     base_vtk.insert(
                         5 + 2 * n,
                         f"\n\t\t\t\t\t<DataArray type='{dic['vtkformat'][n]}' Name="
@@ -138,7 +135,7 @@ def opmtovtk(dic, k):
                         + "NumberOfComponents='1' format='ascii'>\n",
                     )
                 if dic["vtkformat"][n] == "Float64":
-                    if i == 0:
+                    if l == 0:
                         base_vtk.insert(
                             6 + 2 * n,
                             " ".join(
@@ -154,7 +151,7 @@ def opmtovtk(dic, k):
                             + ["\n\t\t\t\t\t</DataArray>"]
                         )
                 elif dic["vtkformat"][n] == "Float32":
-                    if i == 0:
+                    if l == 0:
                         base_vtk.insert(
                             6 + 2 * n,
                             " ".join(
@@ -170,7 +167,7 @@ def opmtovtk(dic, k):
                             + ["\n\t\t\t\t\t</DataArray>"]
                         )
                 elif dic["vtkformat"][n] == "UInt16":
-                    if i == 0:
+                    if l == 0:
                         base_vtk.insert(
                             6 + 2 * n,
                             " ".join(
@@ -188,11 +185,11 @@ def opmtovtk(dic, k):
                 else:
                     print(f"Unknow format ({dic['vtkformat'][n]}).")
                     sys.exit()
-            if i == 0:
+            if l == 0:
                 base_vtk.insert(
                     7 + 2 * (len(dic["vrs"]) - 1), "\n\t\t\t\t</CellData>\n"
                 )
-            where = dic["save"][k] if dic["save"][k] else dic["deck"]
+            where = dic["save"][k] if dic["save"][k] else dic["dname"]
             with open(
                 f"{dic['output']}/{where}-{0 if i<1000 else ''}"
                 + f"{0 if i<100 else ''}{0 if i<10 else ''}{int(i)}.vtu",
@@ -214,17 +211,17 @@ def make_dry_deck(dic):
 
     """
     dic["lol"] = []
-    with open(dic["deck"] + ".DATA", "r", encoding="utf8") as file:
+    with open(dic["dname"] + ".DATA", "r", encoding="utf8") as file:
         for row in csv.reader(file):
             nrwo = str(row)[2:-2].strip()
             if nrwo == "SCHEDULE":
                 dic["lol"].append(nrwo)
                 dic["lol"].append("RPTRST\n'BASIC=2'/\n")
-                dic["lol"].append("TSTEP\n1*0.0001/\n")
+                dic["lol"].append("TSTEP\n0.0001/\n")
                 break
             dic["lol"].append(nrwo)
     with open(
-        dic["deck"] + "_DRYRUN.DATA",
+        dic["dname"] + "_DRYRUN.DATA",
         "w",
         encoding="utf8",
     ) as file:

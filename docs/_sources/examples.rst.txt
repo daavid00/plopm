@@ -362,3 +362,42 @@ To create a gif and mask the results using the satnum numbers (any variable shou
 .. image:: ./figs/xco2l.gif
 
 If **-r** is not provided, then by default the GIF uses all restart steps. For selected restart steps, these can be given separated by commas, e.g., **-r 1,4,5**.
+
+==================
+Graphical abstract 
+==================
+
+Here we describe how to generate the ilustrations in the `graphical abstract <https://github.com/cssr-tools/plopm/blob/main/docs/text/figs/plopm.png>`_.
+The first ilustration is generated from the SPE11B model using `pyopmspe11 <https://github.com/OPM/pyopmspe11>`_:
+
+.. code-block:: bash
+
+    pip install git+https://github.com/OPM/pyopmspe11.git
+    curl -L -O https://raw.githubusercontent.com/OPM/pyopmspe11/refs/heads/main/examples/spe11b.toml
+    curl -L https://raw.githubusercontent.com/OPM/pyopmspe11/refs/heads/main/examples/spe11b.toml -o spe11b_higher_rate.toml
+    ex -s +'51c|inj = [[25, 5, 1, 0.07, 10, 1, 0.07, 10]]' -c x spe11b_higher_rate.toml
+    pyopmspe11 -i spe11b.toml -o spe11b -f 0
+    pyopmspe11 -i spe11b_higher_rate.toml -o spe11b_higher_rate -f 0
+    plopm -i 'spe11b/SPE11B spe11b_higher_rate/SPE11B_HIGHER_RATE' -v 'fgmip * 1e-6' -c 'r,b' -tunits y -xformat .0f -lw 2 -label 'Base case  Higher injection rate' -xlnum 6 -ylabel 'Total CO$_2$ mass [Kt]' -f 18 -t 'Comparing two runs of the SPE11B model'
+
+The ilustration in the middle is generated from the `NORNE_ATW2013.DATA <https://github.com/OPM/opm-data/blob/master/norne/NORNE_ATW2013.DATA>`_ model:
+
+.. code-block:: bash
+
+    pip install git+https://github.com/OPM/pyopmspe11.git
+    curl -L -O https://raw.githubusercontent.com/OPM/pyopmspe11/refs/heads/main/examples/spe11b.toml
+    pyopmspe11 -i spe11b.toml -o spe11b -f 0
+
+The ilustration in the right is generated from the SPE11C model using `pyopmspe11 <https://github.com/OPM/pyopmspe11>`_, specially the corner-point case with
+more than a 100 million cells (`r4_cp_8m-8mish-8mish.toml <https://github.com/OPM/pyopmspe11/blob/main/benchmark/spe11c/r4_cp_8m-8mish-8mish.toml>`_). Since that
+case requires a big computer (run with 1024 CPUs), then the steps below are applied to a version of the SPE11C model with fewer cells that can be run locally:
+
+.. code-block:: bash
+
+    pip install git+https://github.com/OPM/pyopmspe11.git
+    curl -L -O https://raw.githubusercontent.com/OPM/pyopmspe11/refs/heads/main/examples/spe11c.toml
+    pyopmspe11 -i spe11c.toml -o spe11c -f 0
+    plopm -i spe11c/SPE11C -v satnum,xco2l -vtkformat UInt16,Float32 -r 0,5 -m vtk
+
+The above commands will generate the SPE11C.pvd, SPE11C-000.vtu, and SPE11C_0005.vtu files, which then can be open using `paraview <https://www.paraview.org>`_,
+and using the interactive GUI one can then obtain the most-rigthed figure in the abstract (e.g., using the facie numbers stored as satnum to add the background).

@@ -5,7 +5,7 @@
 [![DOI](https://zenodo.org/badge/828515658.svg)](https://doi.org/10.5281/zenodo.13332414)
 <img src="docs/text/figs/plopm.png" width="1100" height="300">
 
-# plopm: Simplified and flexible tool to visualize OPM Flow geological models
+# plopm: A lightweight and flexible tool for visualization and postprocessing of OPM Flow geological models
 
 ## Main feature
 Quick generation of PNG figures, GIFs, and VTKs from a OPM Flow type model.
@@ -48,7 +48,7 @@ plopm -i name(s)_of_input_file(s)
 Run `plopm --help` to see all possible command line argument options.
 
 ## Getting started
-See the [_examples_](https://cssr-tools.github.io/plopm/examples.html) in the [_documentation_](https://cssr-tools.github.io/plopm/introduction.html).
+See the [_examples_](https://cssr-tools.github.io/plopm/examples.html) in the [_documentation_](https://cssr-tools.github.io/plopm/introduction.html) and this [_paper_](https://github.com/cssr-tools/plopm/tree/main/paper/paper.pdf).
 
 ## Citing
 * Landa-Marbán, D. 2024. plopm: Simplified and flexible tool to visualize OPM Flow geological models. https://doi.org/10.5281/zenodo.13332415.

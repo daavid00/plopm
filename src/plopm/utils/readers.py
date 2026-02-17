@@ -761,7 +761,7 @@ def read_summary(dic, case, quan, tunit, qskl, n):
         if tunit == "Dates":
             smsp_dates = 86400 * summary["TIME"]
             smsp_dates = [
-                summary.start_date + datetime.timedelta(seconds=seconds)
+                summary.start_date + datetime.timedelta(seconds=float(seconds))
                 for seconds in smsp_dates
             ]
             time = smsp_dates
