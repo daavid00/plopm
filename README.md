@@ -51,7 +51,7 @@ Run `plopm --help` to see all possible command line argument options.
 See the [_examples_](https://cssr-tools.github.io/plopm/examples.html) in the [_documentation_](https://cssr-tools.github.io/plopm/introduction.html) and this [_paper_](https://github.com/cssr-tools/plopm/tree/main/paper/paper.pdf).
 
 ## Citing
-* Landa-Marbán, D. 2024. plopm: Simplified and flexible tool to visualize OPM Flow geological models. https://doi.org/10.5281/zenodo.13332415.
+* Landa-Marbán, D. 2026. plopm: A lightweight and flexible tool for visualization and postprocessing of OPM Flow geological models. [https://doi.org/10.13140/RG.2.2.12046.22081](https://doi.org/10.13140/RG.2.2.12046.22081).
 
 ## About plopm
 The _plopm_ package is being funded by the [_HPC Simulation Software for the Gigatonne Storage Challenge project_](https://www.norceresearch.no/en/projects/hpc-simulation-software-for-the-gigatonne-storage-challenge) [project number 622059] and [_Center for Sustainable Subsurface Resources (CSSR)_](https://cssr.no) 

@@ -1,11 +1,21 @@
 cff-version: "1.2.0"
-message: "If you use this software, please cite it as below."
+title: "plopm: A lightweight and flexible tool for visualization and postprocessing of OPM Flow geological models"
 authors:
 - family-names: Landa-Marbán
   given-names: David
   orcid: "https://orcid.org/0000-0002-3343-1005"
-title: "plopm: Simplified and flexible tool to visualize 
-  OPM Flow geological models"
-year: 2024
-doi: 10.5281/zenodo.13332415
-url: "https://github.com/cssr-tools/plopm"
+contact:
+- family-names: Landa-Marbán
+  given-names: David
+  orcid: "https://orcid.org/0000-0002-3343-1005"
+message: "If you use this software, please cite it as below."
+preferred-citation:
+  authors:
+  - family-names: Landa-Marbán
+    given-names: David
+    orcid: "https://orcid.org/0000-0002-3343-1005"
+  title: "plopm: A lightweight and flexible tool for visualization and postprocessing of OPM Flow geological models"
+  year: 2026
+  doi: 10.13140/RG.2.2.12046.22081
+  journal: ResearchGate preprint
+  type: article
